@@ -1,21 +1,52 @@
 {% extends "photos/base.html" %}
 
 {% block page_content %}
-    <h1>{{ content }}</h1>
-    {% if is_post %}
-        <div class="upload-info">
-            <p>Uploaded file: {{ filename }}</p>
-            <p>Random number: {{ image_random_num }}</p>
-            <p>Response time: {{ wait_time }}</p>
-        </div>
-    {% endif %}
+<h1>{{ content }}</h1>
 
-    <form method="post" enctype="multipart/form-data">
-
-        <legend>Upload an image</legend>
+    <!-- Форма для единичной загрузки -->
+    <div class="upload-section">
+        <h3>Upload an image</h3>
+        <form method="post" enctype="multipart/form-data">
             {% csrf_token %}
-        <input type="file" name="image">
-        <button type="submit">Upload</button>
-    </form>
+            <input type="hidden" name="form_type" value="single">
+            <input type="file" name="single_image" required>
+            <button type="submit">Upload Single</button>
+        </form>
+
+        {% if single_upload %}
+        <div class="result">
+            <p>Uploaded: {{ single_upload.filename }}</p>
+            <p>Random Number: {{ single_upload.random_num }}</p>
+        </div>
+        {% endif %}
+    </div>
+<p></p>
+    <!-- Форма для множественной загрузки -->
+    <div class="upload-section">
+        <h3>Upload multiple images</h3>
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <input type="hidden" name="form_type" value="multiple">
+            <input type="file" name="multiple_images" multiple required>
+            <button type="submit">Upload Multiple</button>
+        </form>
+
+        {% if multiple_uploads %}
+        <div class="result">
+            <h3>Uploaded Files:</h3>
+            {% for file in multiple_uploads %}
+            <div class="file-info">
+                <p>{{ file.filename }} - {{ file.random_num }}</p>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+
+    {% if is_post %}
+    <div class="status-info">
+        <p>Processing time: {{ wait_time }}</p>
+    </div>
+    {% endif %}
 
 {% endblock page_content %}
