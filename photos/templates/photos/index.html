@@ -1,5 +1,21 @@
 {% extends "photos/base.html" %}
 
 {% block page_content %}
-    <h1>Hello, World!</h1>
+    <h1>{{ content }}</h1>
+    {% if is_post %}
+        <div class="upload-info">
+            <p>Uploaded file: {{ filename }}</p>
+            <p>Random number: {{ image_random_num }}</p>
+            <p>Response time: {{ wait_time }}</p>
+        </div>
+    {% endif %}
+
+    <form method="post" enctype="multipart/form-data">
+
+        <legend>Upload an image</legend>
+            {% csrf_token %}
+        <input type="file" name="image">
+        <button type="submit">Upload</button>
+    </form>
+
 {% endblock page_content %}
