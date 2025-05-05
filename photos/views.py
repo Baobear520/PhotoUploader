@@ -1,6 +1,4 @@
-from django.contrib import admin
-from django.urls import path
+from django.shortcuts import render
 
-urlpatterns = [
-    path("admin/", admin.site.urls),
-]
+def upload_photo(request):
+    return render(request, "photos/index.html", {})
