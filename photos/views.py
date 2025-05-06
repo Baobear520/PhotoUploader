@@ -1,31 +1,33 @@
-import random
-import time
+from django.http import JsonResponse
 
-from django.core.exceptions import ValidationError
-from django.db import OperationalError, transaction, IntegrityError, DatabaseError
-from django.shortcuts import render
-from django.http import HttpResponseNotAllowed, HttpResponseBadRequest, HttpResponseServerError, HttpResponse
-
-from photos.models import Photo
-
-# views.py
-from django.views.generic import FormView, TemplateView, CreateView
-from .forms import SingleUploadForm, FileFieldForm
+from .tasks import process_file
 
 
-class UploadFilesView(CreateView):
-    model = Photo
-    fields = ['image_random_num']
-    template_name = 'photos/upload.html'
-
-    def form_valid(self, form):
-        obj = form.save(commit=False)
-        if self.request.FILES:
-            for f in self.request.FILES.getlist('file'):
-                obj = self.model.objects.create(image_random_num=random.randint(1,1000))
+# def home(request):
+#     records = Photo.objects.all().order_by("-uploaded_at")
+#     return render(request, "home.html", {"records": records})
 
 
-        return super(UploadFilesView, self).form_valid(form)
+def upload_image(request):
+    if request.method == "POST":
+        files = request.FILES.getlist("photos")
+        if not files:
+            return JsonResponse({"error": "No files uploaded"}, status=400)
+
+        # Запуск задач для каждого файла
+        task_ids = []
+        for file in files:
+            task = process_file.delay(file.name)  # Передаем только имя файла
+            task_ids.append(task.id)
+
+        return JsonResponse({
+            "status": "Processing started",
+            "task_ids": task_ids
+        })
+    elif request.method == "GET":
+        return JsonResponse({"status": "Processing files"})
+
+    return JsonResponse({"error": "Method not allowed"}, status=405)
 
 
 
