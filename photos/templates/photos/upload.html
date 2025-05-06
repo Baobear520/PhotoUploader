@@ -1,0 +1,28 @@
+{% extends "photos/base.html" %}
+
+{% block page_content %}
+<script>
+  $(document).ready(function(){
+    $('#id_file').attr("multiple","true");
+
+  })
+ </script>
+<form method="post" enctype="multipart/form-data" action="">{% csrf_token %}
+ {{ form.file }}
+ <input type="submit" value="upload" />
+
+</form>
+<!--<form method="post" enctype="multipart/form-data" action="{% url 'upload_photo' %}">-->
+<!--    {% csrf_token %}-->
+<!--    <h2>Одиночная загрузка</h2>-->
+<!--    {{ single_form.image }}-->
+<!--    <button type="submit" name="single_form">Загрузить</button>-->
+<!--</form>-->
+<!--<p></p>-->
+<!--<form method="post" enctype="multipart/form-data">-->
+<!--    {% csrf_token %}-->
+<!--    <h2>Множественная загрузка</h2>-->
+<!--    {{ multiple_form.images }}-->
+<!--    <button type="submit" name="multiple_form">Загрузить</button>-->
+<!--</form>-->
+{% endblock page_content %}

@@ -36,7 +36,7 @@
             <h3>Uploaded Files:</h3>
             {% for file in multiple_uploads %}
             <div class="file-info">
-                <p>{{ file.filename }} - {{ file.random_num }}</p>
+                <p>{{forloop.counter}}) {{ file.filename }} - {{ file.random_num }}</p>
             </div>
             {% endfor %}
         </div>
