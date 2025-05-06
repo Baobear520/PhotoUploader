@@ -1,10 +1,10 @@
 from django.contrib import admin
 
-from photos.models import Photo
+from photos.models import ImageRecord
 
 
-class PhotoAdmin(admin.ModelAdmin):
+class ImageRecordAdmin(admin.ModelAdmin):
     pass
 
 
-admin.site.register(Photo, PhotoAdmin)
+admin.site.register(ImageRecord, ImageRecordAdmin)
