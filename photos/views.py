@@ -1,33 +1,117 @@
-from django.http import JsonResponse
+from celery import group
+from django.shortcuts import render
 
-from .tasks import process_file
+from .tasks import test_task
+from django.views.generic import View
 
 
+
+class TestView(View):
+    def get(self, request):
+        return render(request, "test.html")
+
+    def post(self,request):
+        try:
+            files = request.FILES.getlist("photos")
+            if not files:
+                return render(request, "error.html", {"error": "No files uploaded"})
+            elif len(files) > 100:
+                return render(request, "error.html", {"error": "Too many files"})
+            elif len(files) == 1:
+                file_name = files[0].name
+                task = test_task.delay(file_name)
+                context = {
+                    "task_id": task.id,
+                    "is_group": False,
+                    "file_name": file_name
+                }
+            else:
+                task_group = group(test_task.s(file.name) for file in files)
+                group_result = task_group.apply_async()
+                # you must explicitly call the save function on the group_result after calling the tasks
+                group_result.save()
+                context = {
+                    "task_id": group_result.id,
+                    "is_group": True
+                }
+
+            return render(request, 'success.html', context)
+
+        except Exception as e:
+            print(f"{type(e).__name__}: {e}")
+            return render(request, "error.html", {"error": str(e)})
+
+
+#
+#
+#
+#
+#
+#
+# def test(request):
+#     files = request.FILES.getlist("photos")
+#     if not files:
+#         return render(request, "photos/error.html", {"error": "No files uploaded"})
+#     file_name = files[0].name
+#
+#     task = test_task.delay(file_name)
+#     context = {
+#         "task_id": task.id,
+#         "file_name": file_name
+#     }
+#     return render(request, "photos/test.html", context)
+
+
+# def success(request):
+#     tasks = AsyncResult(request.GET.get("task_id"))
+#     return render(request, "photos/success.html", {"tasks": tasks})
+
+
+
+# class UploadImageView(View):
+#     def get(self, request):
+#         return render(request, "photos/upload.html")
+#
+#     def post(self, request):
+#         try:
+#             files = request.FILES.getlist("photos")
+#             if not files:
+#                 return render(request, "photos/upload.html", {"error": "No files uploaded"})
+#
+#             records = ImageRecord.bulk_create(
+#                 [ImageRecord(file_name=file) for file in files]
+#             )
+#             updated_records  = group_handler(records)
+#
+#             return render(request, "photos/success.html", {"records": updated_records})
+#         except Exception as e:
+#             return render(request, "photos/upload.html", {"error": str(e)})
+    #
+    # class UploadedImagesListView(View):
+    #     def get(self, request):
+    #         records = ImageRecord.objects.all().order_by("-id")
+    #         return render(request, "photos/success.html", {"records": records})
+
+
+#
 # def home(request):
-#     records = Photo.objects.all().order_by("-uploaded_at")
-#     return render(request, "home.html", {"records": records})
+#     records = ImageRecord.objects.all().order_by("-id")
+#     return render(request, "photos/home.html", {"records": records})
 
 
-def upload_image(request):
-    if request.method == "POST":
-        files = request.FILES.getlist("photos")
-        if not files:
-            return JsonResponse({"error": "No files uploaded"}, status=400)
-
+# @csrf_exempt
+# def test(request):
+#     if request.method == 'POST':
+#         files = request.FILES.getlist("photos")
+#         if not files:
+#             return JsonResponse({"error": "No files uploaded"}, status=400)
+#         return JsonResponse({
+#             'status': 'success',
+#             'received_files': [{'name': file.name, 'size': file.size} for file in files]
+#         })
         # Запуск задач для каждого файла
-        task_ids = []
-        for file in files:
-            task = process_file.delay(file.name)  # Передаем только имя файла
-            task_ids.append(task.id)
 
-        return JsonResponse({
-            "status": "Processing started",
-            "task_ids": task_ids
-        })
-    elif request.method == "GET":
-        return JsonResponse({"status": "Processing files"})
 
-    return JsonResponse({"error": "Method not allowed"}, status=405)
 
 
 

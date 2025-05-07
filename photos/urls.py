@@ -1,8 +1,12 @@
 from django.urls import path
 
-from photos import views
+from photos.views import TestView
+
+
 
 urlpatterns = [
-    path('photo', views.upload_image, name='upload_image'),
-
+    path('test', TestView.as_view(), name='test'),
+    path('success', TestView.as_view(), name='success'),
 ]
+
+
