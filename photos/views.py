@@ -1,9 +1,11 @@
 from celery.result import AsyncResult
+from django.core.exceptions import ValidationError
 from django.http import JsonResponse
 from django.shortcuts import render
 from django.views.generic import View, DetailView
 
 from .tasks import image_task
+from .validators import validate_images, ImageBatchValidator
 
 
 class UploadView(View):
@@ -13,19 +15,19 @@ class UploadView(View):
     def post(self,request):
         try:
             images = request.FILES.getlist('images')
-            if images:
-                tasks = []
-                for image in images:
-                    file_name = image.name
-                    print(f"Processing file: {file_name}")
-                    # Запуск задачи Celery для каждого файла
-                    task = image_task.delay(file_name)
-                    tasks.append(task.id)
+            validate_images(images)
+            tasks = []
+            for image in images:
+                file_name = image.name
+                print(f"Processing file: {file_name}")
+                # Запуск задачи Celery для каждого файла
+                task = image_task.delay(file_name)
+                tasks.append(task.id)
 
                 return JsonResponse({'task_ids': tasks}, status=202)
-            return JsonResponse({'error': 'No files uploaded'}, status=400)
-        except Exception as e:
-            return JsonResponse({'Error': str(e)}, status=500)
+        except (ValidationError, ValueError) as e:
+            return JsonResponse({'Error': str(e)}, status=400)
+
 
 
 class TaskStatusView(DetailView):
