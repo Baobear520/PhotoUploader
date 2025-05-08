@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Image Upload{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'photos/css/upload.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="upload-container">
+    <h1>Image Upload with Processing</h1>
+
+    <div class="file-input-wrapper">
+        <label for="fileInput" class="file-input-label">
+            <i class="fas fa-cloud-upload-alt"></i> Choose Files
+        </label>
+        <input type="file" id="fileInput" class="file-input" name="images" multiple accept="image/*">
+    </div>
+
+    <div id="fileList" class="file-list"></div>
+
+    <button id="uploadButton" class="upload-button">
+        <i class="fas fa-upload"></i> Upload Files
+    </button>
+</div>
+
+<div id="status">Status: Ready to upload</div>
+<div id="progressContainer" class="progress-container">
+    <div id="progressBar" class="progress-bar"></div>
+</div>
+<div id="results" class="results-container"></div>
+{% endblock %}
+
