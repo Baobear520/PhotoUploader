@@ -1,12 +1,12 @@
 from django.urls import path
 
-from photos.views import TestView
 
-
+from photos.views import UploadView, TaskStatusView
 
 urlpatterns = [
-    path('test', TestView.as_view(), name='test'),
-    path('success', TestView.as_view(), name='success'),
+    path('', UploadView.as_view(), name='home'),
+    path('upload/', UploadView.as_view(), name='upload-images'),
+    path('task-status/', TaskStatusView.as_view(), name='task-status'),
 ]
 
 

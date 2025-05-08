@@ -3,6 +3,5 @@ from django.urls import path, include
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('api/', include('photos.urls')),
-    path('celery-progress/', include('celery_progress.urls')),
+    path('api/', include('photos.urls'))
 ]
