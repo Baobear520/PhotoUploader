@@ -1,4 +1,4 @@
-from django.db import OperationalError
+from django.db import DatabaseError
 from django.forms.models import model_to_dict
 from celery import shared_task
 
@@ -15,11 +15,11 @@ def image_task(file_name: str, *args, **kwargs) -> dict | None:
         data["execution_time"] = execution_time
         return data
 
-    except OperationalError as e:
-        print(f"Error: {e}")
+    except DatabaseError as e:
+            print(f"DB error saving record: {str(e)}")
 
     except Exception as e:
-        print(f"Error: {e}")
+        print(f"{type(e).__name__}: {e}")
 
     return
 
