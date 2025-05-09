@@ -22,6 +22,7 @@ prompt_toolkit==3.0.51
 Pygments==2.19.1
 PySocks==1.7.1
 python-dateutil==2.9.0.post0
+python-dotenv==1.1.0
 redis==6.0.0
 requests==2.32.3
 requests-toolbelt==1.0.0
