@@ -4,7 +4,7 @@ import os
 
 
 MAX_SIZE = 5 * 1024 * 1024
-ALLOWED_EXTENSIONS = ['jpg', 'jpeg', 'png']
+ALLOWED_EXTENSIONS = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp']
 MAX_NUMBER_OF_IMAGES = 100
 MAX_LENGTH_OF_NAME = 255
 
