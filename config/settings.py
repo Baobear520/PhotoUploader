@@ -1,10 +1,12 @@
 import os
 from pathlib import Path
+from dotenv import load_dotenv
 
+load_dotenv()
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = 'django-insecure-oj%^1d@fs3*brie3_0&-)#lm*wzg&j-p7qo8n=)3z9f=e7e_mx'
+SECRET_KEY = os.environ['SECRET_KEY']
 
 DEBUG = True
 
@@ -23,9 +25,7 @@ PROJECT_APPS = [
     "photos.apps.PhotosConfig",
 ]
 
-THIRD_PARTY_APPS = [
-    'django_celery_results',
-]
+THIRD_PARTY_APPS = []
 
 INSTALLED_APPS = DJANGO_APPS + PROJECT_APPS + THIRD_PARTY_APPS
 
@@ -58,11 +58,14 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'config.wsgi.application'
 
-
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+    "default": {
+        "ENGINE": "django.db.backends.postgresql",
+        "NAME": os.getenv('POSTGRES_DB'),
+        "USER": os.getenv('POSTGRES_USER'),
+        "PASSWORD": os.getenv('POSTGRES_PASSWORD'),
+        "HOST": os.getenv('POSTGRES_HOST', 'localhost'),
+        "PORT": os.getenv('POSTGRES_PORT', 5432),
     }
 }
 
@@ -95,10 +98,9 @@ STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'static'),
 ]
 
-
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-CELERY_BROKER_URL = os.getenv('CELERY_BROKER_URL', 'redis://localhost:6379/0')
+CELERY_BROKER_URL = 'redis://localhost:6379/0'
 
 CELERY_ACCEPT_CONTENT = ['json']
 
@@ -106,6 +108,7 @@ CELERY_TASK_SERIALIZER = 'json'
 
 CELERY_RESULT_SERIALIZER = 'json'
 
-CELERY_RESULT_BACKEND = 'django-db'
+CELERY_RESULT_BACKEND = 'redis://localhost:6379/1'
 
 CELERY_TIMEZONE = 'UTC'
+
