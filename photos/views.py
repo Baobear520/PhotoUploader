@@ -5,7 +5,7 @@ from django.shortcuts import render
 from django.views.generic import View, DetailView
 
 from .tasks import image_task
-from .validators import validate_images, ImageBatchValidator
+from .validators import validate_images
 
 
 class UploadView(View):
@@ -24,10 +24,9 @@ class UploadView(View):
                 task = image_task.delay(file_name)
                 tasks.append(task.id)
 
-                return JsonResponse({'task_ids': tasks}, status=202)
+            return JsonResponse({'task_ids': tasks}, status=202)
         except (ValidationError, ValueError) as e:
             return JsonResponse({'Error': str(e)}, status=400)
-
 
 
 class TaskStatusView(DetailView):
