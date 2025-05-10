@@ -36,6 +36,21 @@ document.addEventListener('DOMContentLoaded', function() {
         return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
     }
 
+    // CSRF Cookie helper
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.startsWith(name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
     // Main upload function
     async function uploadFiles() {
         const fileInput = document.getElementById('fileInput');
@@ -44,7 +59,6 @@ document.addEventListener('DOMContentLoaded', function() {
         const resultsDiv = document.getElementById('results');
         const progressContainer = document.getElementById('progressContainer');
         const progressBar = document.getElementById('progressBar');
-
         // Validation
         if (fileInput.files.length === 0) {
             statusDiv.textContent = 'Please select files first!';
@@ -73,11 +87,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 method: 'POST',
                 body: formData,
                 headers: {
-                    'X-CSRFToken': getCookie('csrftoken'),
-                },
+                'X-CSRFToken': getCookie('csrftoken'),  // Use the fetched token
+                    },
+                credentials: 'include',  // Required for cookies
             });
 
-            if (!response.ok) {
+                if (!response.ok) {
                 const error = await response.json();
                 throw new Error(error.error || 'Upload failed');
             }
@@ -87,7 +102,7 @@ document.addEventListener('DOMContentLoaded', function() {
             monitorTasks(data.task_ids, fileInput.files.length);
 
         } catch (error) {
-            console.error('Upload error:', error);
+            //console.error('Upload error:', error.message);
             statusDiv.textContent = `Error: ${error.message}`;
             statusDiv.className = 'error';
             uploadButton.disabled = false;
@@ -173,19 +188,4 @@ document.addEventListener('DOMContentLoaded', function() {
         checkStatus();
     }
 
-    // CSRF Cookie helper
-    function getCookie(name) {
-        let cookieValue = null;
-        if (document.cookie && document.cookie !== '') {
-            const cookies = document.cookie.split(';');
-            for (let i = 0; i < cookies.length; i++) {
-                const cookie = cookies[i].trim();
-                if (cookie.startsWith(name + '=')) {
-                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                    break;
-                }
-            }
-        }
-        return cookieValue;
-    }
 });
