@@ -1,7 +1,9 @@
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as gettext
 import os
+import logging
 
+logger = logging.getLogger(__name__)
 
 MAX_SIZE = 5 * 1024 * 1024
 ALLOWED_EXTENSIONS = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp']
@@ -52,10 +54,10 @@ def validate_images(images) -> list:
     for image in images:
         try:
             validator(image)
-            print(f"Valid image: {image.name}")
+            logger.info(f"Valid image: {image.name}")
             validated_images.append(image)
         except ValidationError as e:
-            print(f"Validation error on image {image.name}: {e}")
+            logger.error(f"Validation error on image {image.name}: {e}")
     if len(validated_images) == 0:
         raise ValidationError(gettext('No valid images found.'))
     return validated_images

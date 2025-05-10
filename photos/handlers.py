@@ -1,6 +1,8 @@
 import random
 import time
+import logging
 
+logger = logging.getLogger(__name__)
 
 MOCK_PROCESSING_TIME = 20
 
@@ -23,5 +25,6 @@ def image_handler(file_name: str, *args, **kwargs)-> tuple[int, float]:
 
     finish = time.perf_counter()
     execution_time = finish - start
+    logger.info(f"Execution time: {execution_time}, image random num: {num}")
 
     return num, execution_time
