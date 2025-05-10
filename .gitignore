@@ -2,7 +2,6 @@
 .idea
 .env
 db.sqlite3
-
 # Ignore files in the root directory
 .DS_Store
 
@@ -32,3 +31,4 @@ wheels/
 MANIFEST
 
 to-do.txt
+/logs/debug.log
