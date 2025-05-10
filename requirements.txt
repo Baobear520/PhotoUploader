@@ -10,6 +10,7 @@ click-plugins==1.1.1
 click-repl==0.3.0
 defusedxml==0.7.1
 Django==5.2
+django-cors-headers==4.7.0
 httpie==3.2.4
 idna==3.10
 kombu==5.5.3
