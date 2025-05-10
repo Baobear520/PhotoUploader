@@ -30,7 +30,7 @@ class UploadView(View):
             error_status = 400 if isinstance(exception, (ValidationError, ValueError)) else 500
             error_response = f"{type(exception).__name__} error: {str(exception)}"
             print(error_response)
-            return JsonResponse({'Error': error_response}, status=error_status)
+            return JsonResponse({'Error': str(exception)}, status=error_status)
 
 
 
