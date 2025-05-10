@@ -25,8 +25,13 @@ class UploadView(View):
                 tasks.append(task.id)
 
             return JsonResponse({'task_ids': tasks}, status=202)
-        except (ValidationError, ValueError) as e:
-            return JsonResponse({'Error': str(e)}, status=400)
+
+        except (ValidationError, ValueError, Exception) as exception:
+            error_status = 400 if isinstance(exception, (ValidationError, ValueError)) else 500
+            error_response = f"{type(exception).__name__} error: {str(exception)}"
+            print(error_response)
+            return JsonResponse({'Error': error_response}, status=error_status)
+
 
 
 class TaskStatusView(DetailView):
@@ -39,7 +44,8 @@ class TaskStatusView(DetailView):
                 'result': task.result if task.status == 'SUCCESS' else None
             })
         except Exception as e:
-            return JsonResponse({'Error': str(e)}, status=500)
+            error_message = f"{type(e).__name__} error: {str(e)}"
+            return JsonResponse({'Error': error_message}, status=500)
 
 
 
