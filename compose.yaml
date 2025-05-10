@@ -1,40 +1,89 @@
 
 services:
-#  myserver:
-#    build:
-#      context: ./Project
-#    environment:
-#      - CELERY_BROKER_URL=redis://redis:6379/0
-#      - THIRD_PARTY_SERVER_URL=http://third-party-server:8001/api/results/
-#    command: >
-#            bash -c "python manage.py makemigrations &&
-#                     python manage.py migrate &&
-#                     python manage.py runserver 0.0.0.0:8000"
-#    volumes:
-#      - ./Project:/Project
-#    ports:
-#      - 8000:8000
-
+  postgres:
+    image: postgres:latest
+    container_name: postgres_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_HOST_AUTH_METHOD: trust
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    ports:
+      - "${POSTGRES_PORT}:5432"
 
   redis:
-    image: redis:latest
+    image: redis:8-alpine
+    container_name: redis
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
     ports:
       - "6379:6379"
-  
-#  celery:
-#    build: ./Project
-#    command: celery -A config worker --loglevel=info
-#    environment:
-#      - CELERY_BROKER_URL=redis://redis:6379/0
-#      - THIRD_PARTY_SERVER_URL=http://third-party-server:8001/api/results/
-#    volumes:
-#      - ./Project:/Project
-#    depends_on:
-#      - myserver
-#      - third-party-server
-#      - redis
+    volumes:
+      - redis-data:/data
+
+  django_server:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: django_server
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      - SECRET_KEY=${SECRET_KEY}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_HOST=postgres
+      - POSTGRES_PORT=5432
+      - CELERY_REDIS_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/1
+    command: >
+      bash -c "python manage.py makemigrations &&
+               python manage.py migrate &&
+               python manage.py runserver 0.0.0.0:8000"
+
+    volumes:
+      - .:/app
+    ports:
+      - "8000:8000"
 
 
+  celery:
+    build: .
+    container_name: celery_worker
+    depends_on:
+      - redis
+      - postgres
+    environment:
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/1
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_HOST=postgres
+    command: celery -A config worker --loglevel=info
+    ports:
+      - "5672:5672"
+    volumes:
+      - .:/app
+    restart: unless-stopped
 
 
-
+volumes:
+  postgres-data:
+  redis-data:
