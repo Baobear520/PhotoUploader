@@ -1,0 +1,30 @@
+# Системные файлы
+.git/
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+*.sqlite3
+
+# Виртуальное окружение
+.venv/
+venv/
+env/
+
+# Кэш Python
+__pycache__/
+*.py[cod]
+.python-version
+
+# Статика и медиа (если собираются в образе)
+static/
+media/
+
+# Файлы окружения (используйте variables в compose)
+.env
+*.env
+
+# Логи и тестовые данные
+logs/
+*.log
