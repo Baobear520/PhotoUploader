@@ -5,7 +5,7 @@ from photos.views import UploadView, TaskStatusView
 
 urlpatterns = [
     path('', UploadView.as_view(), name='home'),
-    path('upload/', UploadView.as_view(), name='upload-images'),
+    path('upload/', UploadView.as_view(), name='upload'),
     path('task-status/', TaskStatusView.as_view(), name='task-status'),
 ]
 
