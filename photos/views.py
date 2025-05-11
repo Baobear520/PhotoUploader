@@ -6,6 +6,7 @@ from django.http import JsonResponse
 from django.shortcuts import render
 from django.views.generic import View, DetailView
 
+from config.celery import check_celery_available
 from .tasks import image_task
 from .validators import ImageBatchValidator
 
@@ -17,6 +18,9 @@ class UploadView(View):
 
     def post(self,request):
         try:
+            # Check Celery status first
+            check_celery_available()
+
             images = request.FILES.getlist('images')
             # Validate all images at once
             valid_images = ImageBatchValidator()(images)
@@ -34,10 +38,16 @@ class UploadView(View):
             }
             return JsonResponse(data,status=202)
 
+        except ConnectionError as e:
+            logger.error("Connection error: %s", str(e))
+            user_message = "There was a problem on our end. Please try again later."
+            return JsonResponse({"error": user_message}, status=503)
+
         except (ValidationError, ValueError, Exception) as exception:
             error_status = 400 if isinstance(exception, (ValidationError, ValueError)) else 500
-            log_error_response = f"{type(exception).__name__} error: {str(exception)}"
-            logger.error(log_error_response)
+            print(exception)
+
+            logger.error("%s occurred: %s", type(exception).__name__, str(exception))
             return JsonResponse({'Error': str(exception)}, status=error_status)
 
 
