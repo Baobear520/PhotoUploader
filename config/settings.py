@@ -119,6 +119,7 @@ CELERY_STATE_DB = None
 
 CELERY_TIMEZONE = 'UTC'
 
+DJANGO_LOG_FILE = os.getenv('DJANGO_LOG_FILE', os.path.join(BASE_DIR, 'logs', 'debug.log'))
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
@@ -136,7 +137,7 @@ LOGGING = {
         },
         'file': {
             'class': 'logging.FileHandler',
-            'filename': os.getenv('DJANGO_LOG_FILE', '/logs/debug.log'),
+            'filename': DJANGO_LOG_FILE,
             'formatter': 'verbose',
             'level': 'INFO',
         },
