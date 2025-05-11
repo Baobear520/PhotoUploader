@@ -7,8 +7,7 @@ from django.shortcuts import render
 from django.views.generic import View, DetailView
 
 from .tasks import image_task
-from .validators import validate_images
-
+from .validators import ImageBatchValidator
 
 logger = logging.getLogger(__name__)
 
@@ -19,24 +18,27 @@ class UploadView(View):
     def post(self,request):
         try:
             images = request.FILES.getlist('images')
-            validate_images(images)
-            logger.info(f"Validated {len(images)} images")
-            tasks = []
-            for image in images:
-                file_name = image.name
-                logger.info(f"Processing file: {file_name}")
-                # Запуск задачи Celery для каждого файла
-                task = image_task.delay(file_name)
-                tasks.append(task.id)
-            logger.info(f"Successfully scheduled {len(tasks)} tasks")
-            return JsonResponse({'task_ids': tasks}, status=202)
+            # Validate all images at once
+            valid_images = ImageBatchValidator()(images)
+
+            # Only process valid images
+            task_ids = []
+            for image in valid_images:
+                logger.info("Processing file: %s", image.name)
+                task = image_task.delay(image.name)
+                task_ids.append(task.id)
+            logger.info("Successfully scheduled %s tasks", len(task_ids))
+            data = {
+                'task_ids': task_ids,
+                'valid_images': [image.name for image in valid_images]
+            }
+            return JsonResponse(data,status=202)
 
         except (ValidationError, ValueError, Exception) as exception:
             error_status = 400 if isinstance(exception, (ValidationError, ValueError)) else 500
             log_error_response = f"{type(exception).__name__} error: {str(exception)}"
             logger.error(log_error_response)
             return JsonResponse({'Error': str(exception)}, status=error_status)
-
 
 
 class TaskStatusView(DetailView):
