@@ -74,12 +74,13 @@ UX-фичи:
    - FAILURE - ошибка обработки
 
 ## Запуск приложения
+### Запуск через Docker
 
 #### Требования
 - Python 3.12+
 - Docker 20.10+ (для запуска в контейнере)
 
-### Инструкция по запуску
+#### Инструкция по запуску
 
 1. Клонировать репозиторий:
    ```bash
@@ -91,14 +92,7 @@ UX-фичи:
 ```bash
 cp .env.example .env
 ```
-3. Создать директоию logs и файл `debug.log`(файл для записи логов по умолчанию):
-
-```bash
-mkdir logs
-touch logs/debug.log
-```
-4. Запустить сервисы:
-
+3. Запустить сервисы:
 Запуск через Docker Compose:
 
 ```bash
@@ -131,7 +125,7 @@ celery -A config worker --loglevel=info
 redis-server
 ```
 
-5. Создать суперпользователя (опционально, если планируете пользоваться админ-панелью):
+4. Создать суперпользователя (опционально, если планируете пользоваться админ-панелью):
 ```bash
 python manage.py createsuperuser
 ```
@@ -139,13 +133,13 @@ python manage.py createsuperuser
 ```bash
 docker-compose exec django_server python manage.py createsuperuser
 ```
-6. Доступ к сервисам:
+5. Доступ к сервисам:
 
 - API: http://localhost:8000/api/
 
 - Админка: http://127.0.0.1:8000/admin
 
-7. Ключевые методы API:
+6. Ключевые методы API:
 
 - GET */api/* - домашняя страница c формой загрузки
 
@@ -153,7 +147,7 @@ docker-compose exec django_server python manage.py createsuperuser
 
 - GET	*/api/task-status/* - Проверка статуса(выполняется через fetch API)
 
-8. Команды управления для Docker Compose:
+7. Команды управления для Docker Compose:
 Остановка сервисов:
 
 ```bash
