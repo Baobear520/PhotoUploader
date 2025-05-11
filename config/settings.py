@@ -112,7 +112,10 @@ CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
 
 CELERY_BROKER_URL = 'redis://redis:6379/0'
+
 CELERY_RESULT_BACKEND = 'redis://redis:6379/1'
+
+CELERY_STATE_DB = None
 
 CELERY_TIMEZONE = 'UTC'
 
@@ -133,7 +136,7 @@ LOGGING = {
         },
         'file': {
             'class': 'logging.FileHandler',
-            'filename': os.path.join(BASE_DIR, 'logs/debug.log'),
+            'filename': os.getenv('DJANGO_LOG_FILE', '/logs/debug.log'),
             'formatter': 'verbose',
             'level': 'INFO',
         },

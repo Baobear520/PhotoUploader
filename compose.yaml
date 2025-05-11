@@ -44,6 +44,8 @@ services:
       redis:
         condition: service_healthy
     environment:
+      - DJANGO_LOG_LEVEL=INFO
+      - DJANGO_LOG_FILE=/var/log/app/app.log
       - SECRET_KEY=${SECRET_KEY}
       - POSTGRES_USER=${POSTGRES_USER}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
@@ -58,7 +60,11 @@ services:
                python manage.py runserver 0.0.0.0:8000"
 
     volumes:
-      - .:/app
+      - ./photos:/app/photos
+      - ./config:/app/config
+      - ./templates:/app/templates
+      - ./static:/app/static
+      - ./manage.py:/app/manage.py
     ports:
       - "8000:8000"
 
@@ -66,10 +72,13 @@ services:
   celery:
     build: .
     container_name: celery_worker
+
     depends_on:
       - redis
       - postgres
     environment:
+      - DJANGO_LOG_FILE=/var/log/app/app.log
+      - SECRET_KEY=${SECRET_KEY}
       - CELERY_BROKER_URL=redis://redis:6379/0
       - CELERY_RESULT_BACKEND=redis://redis:6379/1
       - POSTGRES_USER=${POSTGRES_USER}
@@ -79,10 +88,7 @@ services:
     command: celery -A config worker --loglevel=info
     ports:
       - "5672:5672"
-    volumes:
-      - .:/app
     restart: unless-stopped
-
 
 volumes:
   postgres-data:
