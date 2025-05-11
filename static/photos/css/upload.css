@@ -200,3 +200,33 @@ h1 {
         padding: 12px;
     }
 }
+
+/* Add these styles to your existing CSS */
+.invalid-file {
+    border-left: 4px solid #dc3545;
+    background-color: #fff5f5;
+    padding-left: 8px;
+}
+
+.file-error {
+    color: #dc3545;
+    font-size: 0.9em;
+    margin-left: 5px;
+}
+
+.error-text {
+    color: #dc3545;
+    font-weight: bold;
+}
+
+.file-item {
+    margin: 5px 0;
+    padding: 8px;
+    border-radius: 4px;
+    transition: all 0.3s ease;
+}
+
+/* Existing styles... */
+.success { color: #28a745; }
+.error { color: #dc3545; }
+.processing { color: #17a2b8; }
