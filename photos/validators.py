@@ -1,63 +1,88 @@
-from django.core.exceptions import ValidationError
-from django.utils.translation import gettext_lazy as gettext
 import os
 import logging
+from django.core.exceptions import ValidationError
+from django.utils.translation import gettext_lazy as _
 
 logger = logging.getLogger(__name__)
 
-MAX_SIZE = 5 * 1024 * 1024
-ALLOWED_EXTENSIONS = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp']
-MAX_NUMBER_OF_IMAGES = 100
-MAX_LENGTH_OF_NAME = 255
+ALLOWED_EXTENSIONS = ('jpg', 'jpeg', 'png', 'pdf', 'webp')
+MAX_SIZE = 5 * 1024 * 1024 # 5MB
+MAX_LENGTH = 255
+BATCH_MAX_COUNT = 100
+
+
 
 class ImageValidator:
-    allowed_extensions = ALLOWED_EXTENSIONS
-    max_size = MAX_SIZE
-    max_count = MAX_NUMBER_OF_IMAGES
-    max_length = MAX_LENGTH_OF_NAME
+    def __init__(
+            self,
+            allowed_extensions=ALLOWED_EXTENSIONS,
+            max_size=MAX_SIZE,
+            max_length=MAX_LENGTH
+    ):
+        self.allowed_extensions = allowed_extensions
+        self.max_size = max_size
+        self.max_length = max_length
 
-    def __call__(self, value):
-        self.validate_extension(value)
-        self.validate_size(value)
-        self.validate_name(value)
-        return value
+    def __call__(self, image):
+        """Validate a single image file"""
+        self.validate_extension(image)
+        self.validate_size(image)
+        self.validate_name(image)
+        return True
 
-    def validate_extension(self, value):
-        _, ext = os.path.splitext(value.name)
-        ext = ext.lower().lstrip('.')
+    def validate_extension(self, image):
+        ext = os.path.splitext(image.name)[1][1:].lower()
         if ext not in self.allowed_extensions:
-            raise ValidationError(gettext(f"Unsupported file extension. Only {(', '.join(self.allowed_extensions))} are allowed."))
+            raise ValidationError(
+                _("Unsupported extension '%(ext)s'. Allowed: %(allowed)s"),
+                params={
+                    'ext': ext,
+                    'allowed': ', '.join(self.allowed_extensions)
+                }
+            )
 
-    def validate_size(self, value):
-        if value.size > self.max_size:
-            raise ValidationError(gettext('Image size should not exceed 5MB.'))
+    def validate_size(self, image):
+        if image.size > self.max_size:
+            raise ValidationError(
+                _("File size %(size).2fMB exceeds maximum %(max).2fMB"),
+                params={
+                    'size': image.size / (1024 * 1024),
+                    'max': self.max_size / (1024 * 1024)
+                }
+            )
 
-    def validate_name(self, value):
-        if len(value.name) > self.max_length:
-            raise ValidationError(gettext(f"Image name should not exceed {self.max_length} characters."))
+    def validate_name(self, image):
+        if len(image.name) > self.max_length:
+            raise ValidationError(
+                _("Name too long (%(length)d > %(max)d characters)"),
+                params={'length': len(image.name), 'max': self.max_length}
+            )
 
 
 class ImageBatchValidator:
-    max_count = MAX_NUMBER_OF_IMAGES
+    def __init__(self, max_count=BATCH_MAX_COUNT):
+        self.max_count = max_count
 
-    def __call__(self, value):
-        if len(value) > self.max_count:
-            raise ValidationError(gettext(f"Number of images should not exceed {self.max_count}."))
-        return True
+    def __call__(self, images):
+        """Validate a batch of images"""
+        if len(images) > self.max_count:
+            raise ValidationError(
+                _("Too many images (%(count)d > %(max)d)"),
+                params={'count': len(images), 'max': self.max_count}
+            )
 
+        validator = ImageValidator()
+        valid_images = []
 
-def validate_images(images) -> list:
-    if not ImageBatchValidator()(images):
-        raise ValidationError(gettext('Number of images should not exceed 100.'))
-    validator = ImageValidator()
-    validated_images = []
-    for image in images:
-        try:
-            validator(image)
-            logger.info(f"Valid image: {image.name}")
-            validated_images.append(image)
-        except ValidationError as e:
-            logger.error(f"Validation error on image {image.name}: {e}")
-    if len(validated_images) == 0:
-        raise ValidationError(gettext('No valid images found.'))
-    return validated_images
+        for image in images:
+            try:
+                validator(image)
+                valid_images.append(image)
+                logger.info("Valid image: %s", image.name)
+            except ValidationError as e:
+                logger.warning("Invalid image %s: %s", image.name, str(e))
+
+        if not valid_images:
+            raise ValidationError(_("No valid images provided"))
+
+        return valid_images
