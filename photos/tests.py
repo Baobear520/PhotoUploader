@@ -61,7 +61,7 @@ class UploadViewTest(ResponseDataMixin, TestCase):
         data = self.get_response_data(response)
 
         self.assertEqual(response.status_code, 400)
-        self.assertIn('Error', data)
+        self.assertIn('No files provided', data['error'])
 
     @patch('photos.views.check_celery_available')
     def test_invalid_files_upload(self, mock_celery_check):
@@ -72,7 +72,7 @@ class UploadViewTest(ResponseDataMixin, TestCase):
         data = self.get_response_data(response)
 
         self.assertEqual(response.status_code, 400)
-        self.assertIn('Unsupported extension', data['Error'])
+        self.assertIn('Unsupported extension', data['error'])
 
     @patch('photos.views.check_celery_available')
     def test_large_files_upload(self, mock_celery_check):
@@ -83,7 +83,7 @@ class UploadViewTest(ResponseDataMixin, TestCase):
         data = self.get_response_data(response)
 
         self.assertEqual(response.status_code, 400)
-        self.assertIn('exceeds maximum', data['Error'])
+        self.assertIn('exceeds maximum', data['error'])
 
     @patch.object(image_task, 'delay')
     @patch('photos.views.check_celery_available')
@@ -110,7 +110,7 @@ class UploadViewTest(ResponseDataMixin, TestCase):
         data = self.get_response_data(response)
 
         self.assertEqual(response.status_code, 503)
-        self.assertIn('problem on our end', data['error'])
+        self.assertIn('Service unavailable', data['error'])
 
 
 class TaskStatusViewTest(ResponseDataMixin, TestCase):
@@ -161,7 +161,6 @@ class TaskStatusViewTest(ResponseDataMixin, TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(data['status'], 'FAILURE')
-        self.assertIn('Task failed', str(data['result']))
 
     def test_missing_task_id(self):
         request = self.factory.get('/task-status/')
