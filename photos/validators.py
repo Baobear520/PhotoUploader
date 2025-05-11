@@ -73,6 +73,7 @@ class ImageBatchValidator:
 
         validator = ImageValidator()
         valid_images = []
+        error_messages = []
 
         for image in images:
             try:
@@ -81,8 +82,13 @@ class ImageBatchValidator:
                 logger.info("Valid image: %s", image.name)
             except ValidationError as e:
                 logger.warning("Invalid image %s: %s", image.name, str(e))
+                error_messages.append(str(e))
 
         if not valid_images:
-            raise ValidationError(_("No valid images provided"))
+            # Include all individual error messages
+            raise ValidationError(
+                _("No valid images provided. Errors: %(errors)s"),
+                params={'errors': ' | '.join(error_messages)}
+            )
 
         return valid_images
