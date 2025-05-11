@@ -135,19 +135,19 @@ docker-compose exec django_server python manage.py createsuperuser
 ```
 5. Доступ к сервисам:
 
-API: http://localhost:8000/api/
+- API: http://localhost:8000/api/
 
-Админка: http://127.0.0.1:8000/admin
+- Админка: http://127.0.0.1:8000/admin
 
 6. Ключевые методы API:
 
-GET */api/* - домашняя страница c формой загрузки
+- GET */api/* - домашняя страница c формой загрузки
 
-POST */api/upload/* - Загрузка файлов (выполняется через fetch API)
+- POST */api/upload/* - Загрузка файлов (выполняется через fetch API)
 
-GET	*/api/task-status/* - Проверка статуса(выполняется через fetch API)
+- GET	*/api/task-status/* - Проверка статуса(выполняется через fetch API)
 
-6. Команды управления для Docker Compose:
+7. Команды управления для Docker Compose:
 Остановка сервисов:
 
 ```bash
