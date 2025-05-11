@@ -10,6 +10,7 @@ from config.celery import check_celery_available
 from .tasks import image_task
 from .validators import ImageBatchValidator
 
+
 logger = logging.getLogger(__name__)
 
 class UploadView(View):
@@ -21,6 +22,9 @@ class UploadView(View):
             # Check Celery status first
             check_celery_available()
 
+            if 'images' not in request.FILES:
+                return JsonResponse({"error": "No files provided"}, status=400)
+
             images = request.FILES.getlist('images')
             # Validate all images at once
             valid_images = ImageBatchValidator()(images)
@@ -31,6 +35,7 @@ class UploadView(View):
                 logger.info("Processing file: %s", image.name)
                 task = image_task.delay(image.name)
                 task_ids.append(task.id)
+
             logger.info("Successfully scheduled %s tasks", len(task_ids))
             data = {
                 'task_ids': task_ids,
@@ -40,15 +45,14 @@ class UploadView(View):
 
         except ConnectionError as e:
             logger.error("Connection error: %s", str(e))
-            user_message = "There was a problem on our end. Please try again later."
-            return JsonResponse({"error": user_message}, status=503)
+            return JsonResponse({"error": "Service unavailable. Please try again later."}, status=503)
 
-        except (ValidationError, ValueError, Exception) as exception:
-            error_status = 400 if isinstance(exception, (ValidationError, ValueError)) else 500
-            print(exception)
+        except ValidationError as e:
+            return JsonResponse({"error": str(e)}, status=400)
 
-            logger.error("%s occurred: %s", type(exception).__name__, str(exception))
-            return JsonResponse({'Error': str(exception)}, status=error_status)
+        except Exception as e:
+            logger.exception("Unexpected upload error")
+            return JsonResponse({"error": "Internal server error"}, status=500)
 
 
 class TaskStatusView(DetailView):
@@ -56,13 +60,17 @@ class TaskStatusView(DetailView):
         try:
             task_id = request.GET.get('task_id')
             task = AsyncResult(task_id)
-            return JsonResponse({
+            response_data = {
                 'status': task.status,
                 'result': task.result if task.status == 'SUCCESS' else None
-            })
+            }
+            if task.failed():
+                response_data['error'] = str(task.result)
+
+            return JsonResponse(response_data, status=200)
+
         except Exception as e:
-            log_error_message = f"{type(e).__name__} error: {str(e)}"
-            logger.error(log_error_message)
+            logger.error("Unexpected error: %s", str(e))
             return JsonResponse({'Error': str(e)}, status=500)
 
 
