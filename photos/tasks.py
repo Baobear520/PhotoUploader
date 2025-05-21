@@ -1,3 +1,5 @@
+import os
+
 from django.db import OperationalError
 from django.forms.models import model_to_dict
 from celery import shared_task
@@ -6,6 +8,8 @@ from urllib3.exceptions import NameResolutionError
 from .handlers import image_handler
 from .models import ImageRecord
 import logging
+
+from .notifications import send_alert, telegram_sender
 
 
 logger = logging.getLogger(__name__)
@@ -16,10 +20,12 @@ def image_task(self, file_name: str) -> dict | None:
         num, execution_time = image_handler(file_name)
         record = ImageRecord.objects.create(file_name=file_name, image_random_num=num)
         logger.info(f"Record to save: {record}")
-
         data = model_to_dict(record)
         data["execution_time"] = execution_time
-        logger.info(f"Task completed: {data}", extra=data)
+        msg = f"Task completed: {data}"
+        logger.info(msg, extra=data)
+
+        send_alert(telegram_sender, message=msg)
         return data
 
     except OperationalError as exc:
