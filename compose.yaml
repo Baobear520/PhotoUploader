@@ -46,6 +46,8 @@ services:
       - DJANGO_LOG_LEVEL=INFO
       - DJANGO_LOG_FILE=/var/log/app/app.log
       - SECRET_KEY=${SECRET_KEY}
+      - TLG_BOT_TOKEN=${TLG_BOT_TOKEN}
+      - TLG_CHAT_ID=${TLG_CHAT_ID}
       - POSTGRES_USER=${POSTGRES_USER}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
       - POSTGRES_DB=${POSTGRES_DB}
@@ -75,6 +77,8 @@ services:
     environment:
       - DJANGO_LOG_FILE=/var/log/app/app.log
       - SECRET_KEY=${SECRET_KEY}
+      - TLG_BOT_TOKEN=${TLG_BOT_TOKEN}
+      - TLG_CHAT_ID=${TLG_CHAT_ID}
       - CELERY_BROKER_URL=${CELERY_BROKER_URL}
       - CELERY_RESULT_BACKEND=${CELERY_RESULT_BACKEND}
       - POSTGRES_USER=${POSTGRES_USER}

@@ -161,3 +161,5 @@ LOGGING = {
     },
 }
 
+TLG_BOT_TOKEN=os.getenv('TLG_BOT_TOKEN')
+TLG_CHAT_ID=os.getenv('TLG_CHAT_ID')
