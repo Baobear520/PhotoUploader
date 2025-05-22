@@ -2,6 +2,7 @@ import os
 from pathlib import Path
 from dotenv import load_dotenv
 
+
 load_dotenv()
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -161,5 +162,13 @@ LOGGING = {
     },
 }
 
-TLG_BOT_TOKEN=os.getenv('TLG_BOT_TOKEN')
-TLG_CHAT_ID=os.getenv('TLG_CHAT_ID')
+TLG_BOT_TOKEN=os.getenv('TLG_BOT_TOKEN', '')
+TLG_CHAT_ID=os.getenv('TLG_CHAT_ID', '')
+
+SLACK_WEBHOOK_URL=os.getenv('SLACK_WEBHOOK', '')
+
+NOTIFICATION_BACKENDS = [
+    "photos.notifications.telegram_sender",
+    "photos.notifications.slack_sender",
+]
+
