@@ -11,7 +11,7 @@ class NotificationSender(ABC):
         pass
 
 
-class TelegramAlert(NotificationSender):
+class TelegramSender(NotificationSender):
     def __init__(self, token: str, chat_id: str):
         self.token = token
         self.chat_id = chat_id
@@ -25,7 +25,7 @@ class TelegramAlert(NotificationSender):
         response = requests.post(url, json=payload)
         return response.status_code == 200
 
-class SlackAlert(NotificationSender):
+class SlackSender(NotificationSender):
     def __init__(self, webhook_url: str):
         self.webhook_url = webhook_url
 
@@ -35,12 +35,11 @@ class SlackAlert(NotificationSender):
         return response.status_code == 200
 
 
-# Фабрика для удобного создания sender'ов
-def send_alert(sender: NotificationSender, message: str) -> bool:
-    return sender.send(message)
-
-
-telegram_sender = TelegramAlert(
+telegram_sender = TelegramSender(
     token=settings.TLG_BOT_TOKEN,
     chat_id=settings.TLG_CHAT_ID
 )
+slack_sender = SlackSender(
+    webhook_url=settings.SLACK_WEBHOOK_URL
+)
+
