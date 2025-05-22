@@ -25,7 +25,7 @@ def image_handler(file_name: str, *args, **kwargs)-> tuple[int, float]:
     time.sleep(MOCK_PROCESSING_TIME)
 
     finish = time.perf_counter()
-    execution_time = finish - start
+    execution_time = round(finish - start, 2)
     logger.info(f"Execution time: {execution_time}, image random num: {num}")
 
     return num, execution_time
