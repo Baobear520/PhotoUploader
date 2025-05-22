@@ -89,6 +89,8 @@ services:
     ports:
       - "5672:5672"
     restart: unless-stopped
+    volumes:
+      - ./photos/tasks:/app/photos/tasks
 
 volumes:
   postgres-data:
